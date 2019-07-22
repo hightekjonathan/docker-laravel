@@ -1,14 +1,18 @@
-FROM ubuntu:18.04
+FROM ubuntu:bionic
+
+ARG DEBIAN_FRONTEND=noninteractive
 
 ENV TZ=America/New_York
-ENV DEBIAN_FRONTEND=noninteractive
-
 RUN ln -snf /usr/share/zoneinfo/$TZ /etc/localtime && echo $TZ > /etc/timezone
 
-RUN apt update
+RUN apt update && apt upgrade -yqq && apt install software-properties-common curl -y
+RUN add-apt-repository ppa://ondrej/php -y
+RUN apt install php7.3 php7.3-mysql php7.3-xml php7.3-ldap php7.3-zip php7.3-mbstring php7.3-json php7.3-opcache php7.3-gd php7.3-intl php7.3-bcmath -y
 
-RUN apt install software-properties-common -y
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-RUN add-apt-repository ppa://ondrej/php -y && add-apt-repository ppa://ondrej/apache2 -y
+WORKDIR /app
+COPY . /app
+#RUN composer install
 
-RUN apt install php7.2 php7.2-mysql php7.2-mbstring php7.2-xml php7.2-zip apache2 -y
+CMD php artisan serve --host=0.0.0.0
